@@ -1,14 +1,9 @@
 package katas;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import model.BoxArt;
-import model.Movie;
-import model.MovieList;
-import util.DataUtil;
-
 import java.util.List;
-import java.util.Map;
+
+import model.Movie;
+import util.DataUtil;
 
 /*
     Goal: Retrieve the largest rating using reduce()
@@ -19,6 +14,7 @@ public class Kata5 {
     public static Double execute() {
         List<Movie> movies = DataUtil.getMovies();
 
-        return 3.0;
+        // The correct result is 5.0
+        return movies.stream().mapToDouble(Movie::getRating).reduce(Double::max).getAsDouble();
     }
 }
