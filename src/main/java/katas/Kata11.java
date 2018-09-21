@@ -112,7 +112,7 @@ public class Kata11 {
 	private static Map<Object, Bookmark> getBookmarkByVideoId(List<Map> bookmarkList) {
 		return bookmarkList.stream().collect(toMap(l -> l.get("videoId"), b -> {
 			Bookmark bookmark = new Bookmark();
-			bookmark.setTime(new Date(new Long((Integer) b.get("time"))));
+			bookmark.setTime(new Date((Integer) b.get("time")));
 			return bookmark;
 		}));
 	}

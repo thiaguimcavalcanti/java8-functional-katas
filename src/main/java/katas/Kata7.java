@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableMap;
+
 import model.BoxArt;
 import model.Movie;
 import model.MovieList;
@@ -19,14 +21,8 @@ public class Kata7 {
 	public static List<Map> execute() {
 		List<MovieList> movieLists = DataUtil.getMovieLists();
 
-		return movieLists.stream().flatMap(ml -> ml.getVideos().stream()).map(movie -> {
-			Map<String, Object> movieMap = new HashMap<>();
-			movieMap.put("id", movie.getId());
-			movieMap.put("title", movie.getTitle());
-			movieMap.put("boxart", getBoxArtsUrl(movie));
-
-			return movieMap;
-		}).collect(Collectors.toList());
+		return movieLists.stream().flatMap(ml -> ml.getVideos().stream()).map(movie -> ImmutableMap.of("id",
+				movie.getId(), "title", movie.getTitle(), "boxart", getBoxArtsUrl(movie))).collect(Collectors.toList());
 	}
 
 	private static String getBoxArtsUrl(Movie m) {

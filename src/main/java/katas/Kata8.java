@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.codepoetics.protonpack.StreamUtils;
+import com.google.common.collect.ImmutableMap;
 
 import model.Bookmark;
 import model.Movie;
@@ -23,11 +24,9 @@ public class Kata8 {
 
 		// StreamUtils.zip()
 
-		return StreamUtils.zip(movies.stream(), bookMarks.stream(), (movie, bookmark) -> {
-			Map<String, Object> movieMap = new HashMap<>();
-			movieMap.put("videoId", movie.getId());
-			movieMap.put("bookmarkId", bookmark.getId());
-			return movieMap;
-		}).collect(Collectors.toList());
+		return StreamUtils
+				.zip(movies.stream(), bookMarks.stream(),
+						(movie, bookmark) -> ImmutableMap.of("videoId", movie.getId(), "bookmarkId", bookmark.getId()))
+				.collect(Collectors.toList());
 	}
 }

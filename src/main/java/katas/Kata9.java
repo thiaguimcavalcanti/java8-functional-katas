@@ -1,13 +1,17 @@
 package katas;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableMap;
+
 import model.BoxArt;
 import model.InterestingMoment;
+import model.Movie;
 import model.MovieList;
 import util.DataUtil;
 
@@ -29,22 +33,19 @@ public class Kata9 {
 	public static List<Map> execute() {
 		List<MovieList> movieLists = DataUtil.getMovieLists();
 
-		return movieLists.stream().flatMap(ml -> ml.getVideos().stream()).map(m -> {
-			Map<String, Object> movieMap = new HashMap<>();
-			movieMap.put("id", m.getId());
-			movieMap.put("title", m.getTitle());
+		return movieLists
+				.stream().flatMap(ml -> ml.getVideos().stream()).map(movie -> ImmutableMap.of("id", movie.getId(),
+						"title", movie.getTitle(), "time", getTime(movie), "url", getBoxArUrl(movie)))
+				.collect(Collectors.toList());
+	}
 
-			// time
-			InterestingMoment interestingMoment = m.getInterestingMoments().stream()
-					.filter(i -> "Middle".equals(i.getType())).findFirst().orElse(null);
-			movieMap.put("time", interestingMoment.getTime());
+	private static Date getTime(Movie movie) {
+		InterestingMoment interestingMoment = movie.getInterestingMoments().stream()
+				.filter(i -> "Middle".equals(i.getType())).findFirst().orElse(null);
+		return interestingMoment != null ? interestingMoment.getTime() : null;
+	}
 
-			// url
-			String urlBoxArt = m.getBoxarts().parallelStream().reduce(smallestBoxartOperator).map(BoxArt::getUrl)
-					.orElse(null);
-			movieMap.put("url", urlBoxArt);
-
-			return movieMap;
-		}).collect(Collectors.toList());
+	private static String getBoxArUrl(Movie movie) {
+		return movie.getBoxarts().parallelStream().reduce(smallestBoxartOperator).map(BoxArt::getUrl).orElse(null);
 	}
 }
