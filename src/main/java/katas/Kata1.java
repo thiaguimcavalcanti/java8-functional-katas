@@ -1,9 +1,10 @@
 package katas;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.ImmutableMap;
 
 import model.Movie;
 import util.DataUtil;
@@ -17,13 +18,7 @@ public class Kata1 {
 	public static List<Map> execute() {
 		List<Movie> movies = DataUtil.getMovies();
 
-		Map<Integer, String> map = movies.stream().collect(Collectors.toMap(Movie::getId, Movie::getTitle));
-
-		return movies.stream().map(m -> {
-			Map<String, Object> movieMap = new HashMap<>();
-			movieMap.put("id", m.getId());
-			movieMap.put("title", m.getTitle());
-			return movieMap;
-		}).collect(Collectors.toList());
+		return movies.stream().map(movie -> ImmutableMap.of("id", movie.getId(), "title", movie.getTitle()))
+				.collect(Collectors.toList());
 	}
 }

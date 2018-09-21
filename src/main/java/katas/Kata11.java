@@ -74,20 +74,11 @@ public class Kata11 {
 		List<Map> boxArts = DataUtil.getBoxArts();
 		List<Map> bookmarkList = DataUtil.getBookmarkList();
 
-		// box arts by video id
-		Map<Object, Optional<Map>> boxByVideoId = boxArts.stream()
-				.collect(groupingBy(b -> b.get("videoId"), reducing((b1, b2) -> {
-					Integer w1 = (Integer) b1.get("width");
-					Integer w2 = (Integer) b2.get("width");
-					Integer h1 = (Integer) b1.get("height");
-					Integer h2 = (Integer) b2.get("height");
+		// Bookmark by video id
+		Map<Object, Bookmark> bookmarkByVideoId = getBookmarkByVideoId(bookmarkList);
 
-					if ((w1 * h1) < (w2 * h2)) {
-						return b1;
-					} else {
-						return b2;
-					}
-				})));
+		// Box arts by video id
+		Map<Object, Optional<Map>> boxByVideoId = getBoxartsByVideoId(boxArts);
 
 		// Videos by list id
 		Map<Object, List<Movie>> moviesByListId = videos.stream()
@@ -102,13 +93,7 @@ public class Kata11 {
 					movie.setBoxarts(Arrays.asList(boxAlert));
 
 					// Bookmark
-					Bookmark bookmark = bookmarkList.stream().filter(bl -> movie.getId().equals(bl.get("videoId")))
-							.map(bParam -> {
-								Bookmark newBookmark = new Bookmark();
-								newBookmark.setTime(new Date(new Long((Integer) bParam.get("time"))));
-								return newBookmark;
-							}).findFirst().orElse(null);
-					movie.setBookmark(Arrays.asList(bookmark));
+					movie.setBookmark(Arrays.asList(bookmarkByVideoId.get(movie.getId())));
 
 					return movie;
 				}, toList())));
@@ -122,5 +107,28 @@ public class Kata11 {
 		}));
 
 		return Arrays.asList(listById);
+	}
+
+	private static Map<Object, Bookmark> getBookmarkByVideoId(List<Map> bookmarkList) {
+		return bookmarkList.stream().collect(toMap(l -> l.get("videoId"), b -> {
+			Bookmark bookmark = new Bookmark();
+			bookmark.setTime(new Date(new Long((Integer) b.get("time"))));
+			return bookmark;
+		}));
+	}
+
+	private static Map<Object, Optional<Map>> getBoxartsByVideoId(List<Map> boxArts) {
+		return boxArts.stream().collect(groupingBy(b -> b.get("videoId"), reducing((b1, b2) -> {
+			Integer w1 = (Integer) b1.get("width");
+			Integer w2 = (Integer) b2.get("width");
+			Integer h1 = (Integer) b1.get("height");
+			Integer h2 = (Integer) b2.get("height");
+
+			if ((w1 * h1) < (w2 * h2)) {
+				return b1;
+			} else {
+				return b2;
+			}
+		})));
 	}
 }

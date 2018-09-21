@@ -23,10 +23,10 @@ public class Kata8 {
 
 		// StreamUtils.zip()
 
-		return StreamUtils.zip(movies.stream(), bookMarks.stream(), (m, b) -> {
+		return StreamUtils.zip(movies.stream(), bookMarks.stream(), (movie, bookmark) -> {
 			Map<String, Object> movieMap = new HashMap<>();
-			movieMap.put("videoId", m.getId());
-			movieMap.put("bookmarkId", b.getId());
+			movieMap.put("videoId", movie.getId());
+			movieMap.put("bookmarkId", bookmark.getId());
 			return movieMap;
 		}).collect(Collectors.toList());
 	}

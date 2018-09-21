@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import model.BoxArt;
+import model.Movie;
 import model.MovieList;
 import util.DataUtil;
 
@@ -15,24 +16,26 @@ import util.DataUtil;
     Output: List of ImmutableMap.of("id", "5", "title", "Bad Boys", "boxart": "url)
 */
 public class Kata7 {
-    public static List<Map> execute() {
-        List<MovieList> movieLists = DataUtil.getMovieLists();
+	public static List<Map> execute() {
+		List<MovieList> movieLists = DataUtil.getMovieLists();
 
-        return movieLists.stream().flatMap(ml -> ml.getVideos().stream()).map(m -> {
-        	Map<String, Object> movieMap = new HashMap<>();
-			movieMap.put("id", m.getId());
-			movieMap.put("title", m.getTitle());
-			
-			String boxUrl = m.getBoxarts().parallelStream().reduce((b1, b2) -> {
-				if ((b1.getWidth() * b1.getHeight()) > (b2.getWidth() * b2.getHeight())) {
-	        		return b1;
-	        	} else {
-	        		return b2;
-	        	}
-			}).map(BoxArt::getUrl).orElse(null);
-			movieMap.put("boxart", boxUrl);
-			
+		return movieLists.stream().flatMap(ml -> ml.getVideos().stream()).map(movie -> {
+			Map<String, Object> movieMap = new HashMap<>();
+			movieMap.put("id", movie.getId());
+			movieMap.put("title", movie.getTitle());
+			movieMap.put("boxart", getBoxArtsUrl(movie));
+
 			return movieMap;
-        }).collect(Collectors.toList());
-    }
+		}).collect(Collectors.toList());
+	}
+
+	private static String getBoxArtsUrl(Movie m) {
+		return m.getBoxarts().parallelStream().reduce((b1, b2) -> {
+			if ((b1.getWidth() * b1.getHeight()) > (b2.getWidth() * b2.getHeight())) {
+				return b1;
+			} else {
+				return b2;
+			}
+		}).map(BoxArt::getUrl).orElse(null);
+	}
 }
