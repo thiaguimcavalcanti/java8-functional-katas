@@ -1,11 +1,22 @@
 package katas;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import util.DataUtil;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.reducing;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import model.Bookmark;
+import model.BoxArt;
+import model.Movie;
+import model.MovieList;
+import util.DataUtil;
 
 /*
     Goal: Create a datastructure from the given data:
@@ -57,14 +68,59 @@ import java.util.Map;
     Output: the given datastructure
 */
 public class Kata11 {
-    public static List<Map> execute() {
-        List<Map> lists = DataUtil.getLists();
-        List<Map> videos = DataUtil.getVideos();
-        List<Map> boxArts = DataUtil.getBoxArts();
-        List<Map> bookmarkList = DataUtil.getBookmarkList();
+	public static List<Map> execute() {
+		List<Map> lists = DataUtil.getLists();
+		List<Map> videos = DataUtil.getVideos();
+		List<Map> boxArts = DataUtil.getBoxArts();
+		List<Map> bookmarkList = DataUtil.getBookmarkList();
 
-        return ImmutableList.of(ImmutableMap.of("name", "someName", "videos", ImmutableList.of(
-                ImmutableMap.of("id", 5, "title", "The Chamber", "time", 123, "boxart", "someUrl")
-        )));
-    }
+		// box arts by video id
+		Map<Object, Optional<Map>> boxByVideoId = boxArts.stream()
+				.collect(groupingBy(b -> b.get("videoId"), reducing((b1, b2) -> {
+					Integer w1 = (Integer) b1.get("width");
+					Integer w2 = (Integer) b2.get("width");
+					Integer h1 = (Integer) b1.get("height");
+					Integer h2 = (Integer) b2.get("height");
+
+					if ((w1 * h1) < (w2 * h2)) {
+						return b1;
+					} else {
+						return b2;
+					}
+				})));
+
+		// Videos by list id
+		Map<Object, List<Movie>> moviesByListId = videos.stream()
+				.collect(groupingBy(video -> video.get("listId"), mapping(video -> {
+					Movie movie = new Movie();
+					movie.setId((Integer) video.get("id"));
+					movie.setTitle((String) video.get("title"));
+
+					// Box art
+					BoxArt boxAlert = new BoxArt();
+					boxAlert.setUrl((String) boxByVideoId.get(movie.getId()).get().get("url"));
+					movie.setBoxarts(Arrays.asList(boxAlert));
+
+					// Bookmark
+					Bookmark bookmark = bookmarkList.stream().filter(bl -> movie.getId().equals(bl.get("videoId")))
+							.map(bParam -> {
+								Bookmark newBookmark = new Bookmark();
+								newBookmark.setTime(new Date(new Long((Integer) bParam.get("time"))));
+								return newBookmark;
+							}).findFirst().orElse(null);
+					movie.setBookmark(Arrays.asList(bookmark));
+
+					return movie;
+				}, toList())));
+
+		// Create movie list and fill with the videos
+		Map<Object, MovieList> listById = lists.stream().collect(toMap(l -> l.get("id"), l -> {
+			MovieList movieList = new MovieList();
+			movieList.setName((String) l.get("name"));
+			movieList.setVideos(moviesByListId.get(l.get("id")));
+			return movieList;
+		}));
+
+		return Arrays.asList(listById);
+	}
 }

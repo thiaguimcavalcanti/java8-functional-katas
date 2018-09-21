@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -60,25 +60,22 @@ public class Kata10 {
 		List<Map> videos = DataUtil.getVideos();
 
 		// Videos by list id
-		final Map<Object, List<Movie>> videosByListId = videos.stream()
+		Map<Object, List<Movie>> videosByListId = videos.stream()
 				.collect(groupingBy(v -> v.get("listId"), mapping(v -> {
-					Movie m = new Movie();
-					m.setId((Integer) v.get("id"));
-					m.setTitle((String) v.get("title"));
-					return m;
+					Movie movie = new Movie();
+					movie.setId((Integer) v.get("id"));
+					movie.setTitle((String) v.get("title"));
+					return movie;
 				}, toList())));
 
 		// Create movie list and fill with the videos
-		Map<Object, MovieList> listById = lists.stream().collect(toMap(v -> v.get("id"), v -> {
-			MovieList m = new MovieList();
-			m.setName((String) v.get("name"));
-			m.setVideos(videosByListId.get(v.get("id")));
-			return m;
+		Map<Object, MovieList> listById = lists.stream().collect(toMap(l -> l.get("id"), l -> {
+			MovieList movieList = new MovieList();
+			movieList.setName((String) l.get("name"));
+			movieList.setVideos(videosByListId.get(l.get("id")));
+			return movieList;
 		}));
 
-		List<Map> result = new ArrayList<>();
-		result.add(listById);
-
-		return result;
+		return Arrays.asList(listById);
 	}
 }
